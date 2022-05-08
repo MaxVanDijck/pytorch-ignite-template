@@ -15,3 +15,12 @@ model:
 params:
   epochs: 20
   batch_size: 32
+
+optimizer:
+  _target_: torch.optim.Adam
+
+loss:
+  _target_: torch.nn.CrossEntropyLoss
+
+trainer:
+  _target_: src.loops.train_loop.create_trainer
