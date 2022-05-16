@@ -1,0 +1,9 @@
+train:
+  _target_: src.data.cifar_10_train_dataset.CIFAR10TrainDataset
+  root: data
+val:
+  _target_: src.data.cifar_10_val_dataset.CIFAR10ValDataset
+  root: data
+
+epochs: 20
+batch_size: 64

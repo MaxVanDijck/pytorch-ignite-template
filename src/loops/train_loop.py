@@ -2,7 +2,7 @@ import ignite.distributed as idist
 from ignite.engine import Engine, Events
 from ignite.contrib.handlers import ProgressBar
 
-def create_trainer(model, optimizer, criterion, lr_scheduler, config=None):
+def create_engine(model, optimizer, criterion, config=None):
 
     # Define any training logic for iteration update
     def train_step(engine, batch):
@@ -15,18 +15,17 @@ def create_trainer(model, optimizer, criterion, lr_scheduler, config=None):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        lr_scheduler.step()
 
         return loss.item()
 
     # Define trainer engine
-    trainer = Engine(train_step)
+    engine = Engine(train_step)
 
     if idist.get_rank() == 0:
         # Add any custom handlers
 
         # Add progress bar showing batch loss value
-        ProgressBar().attach(trainer, output_transform=lambda x: {"batch loss": x})
+        ProgressBar().attach(engine, output_transform=lambda x: {"batch loss": x})
 
-    return trainer
+    return engine
 

@@ -1,20 +1,12 @@
 # Reproducibility
-seed: 42
-checkpoint: False
+seed: 42 # rng seed for torch, random and numpy
+checkpoint: False # TODO: implement checkpoint resumation
 
-train:
-  _target_: src.data.cifar_10_train_dataset.CIFAR10TrainDataset
-  root: data
-val:
-  _target_: src.data.cifar_10_val_dataset.CIFAR10ValDataset
-  root: data
-
-model:
-  _target_: src.models.cnn.CNN
-
-params:
-  epochs: 20
-  batch_size: 32
+# specify the default training parameters
+defaults:
+  - _self_
+  - data: cifar10.yaml # dataset configuration
+  - model: cifar10.yaml # architecture parameters
 
 optimizer:
   _target_: torch.optim.Adam
@@ -23,4 +15,4 @@ loss:
   _target_: torch.nn.CrossEntropyLoss
 
 trainer:
-  _target_: src.loops.train_loop.create_trainer
+  _target_: src.loops.train_loop.create_engine
