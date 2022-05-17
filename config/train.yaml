@@ -11,8 +11,16 @@ defaults:
 optimizer:
   _target_: torch.optim.Adam
 
-loss:
+criterion:
   _target_: torch.nn.CrossEntropyLoss
 
-trainer:
-  _target_: src.loops.train_loop.create_engine
+engine:
+  _target_: src.engines.cifar10_engine.create_engine
+
+params:
+  batch_size: 32
+  epochs: 20
+
+compute:
+  backend:
+  nproc_per_node:

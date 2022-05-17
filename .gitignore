@@ -1,6 +1,8 @@
+# Run outputs and Datasets
 outputs/*
 data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+*$py.class
