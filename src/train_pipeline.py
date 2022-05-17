@@ -9,17 +9,9 @@ import ignite.distributed as idist
 from ignite.engine import create_supervised_evaluator, Events
 from src.components import Dataloaders
 
-# TODO: Move Transformations to a separate file
-from torchvision.transforms import Compose, Normalize, ToTensor
-
 log = logging.getLogger(__name__)
 
 def train(local_rank, config: DictConfig):
-    # TODO: move this transform elsewhere
-    transform = Compose([ToTensor(), Normalize((0.485, 0.456, 0.406), (0.229, 0.23, 0.225))])
-
-
-
     # set seed for torch, random and numpy
     if config.seed:
         manual_seed(config.seed)
@@ -41,7 +33,7 @@ def train(local_rank, config: DictConfig):
     if config.data.datasets.root and not os.path.isabs(config.data.datasets.root):
         config.data.datasets.root = os.path.join(hydra.utils.get_original_cwd(), config.data.datasets.root)
 
-    datasets = hydra.utils.instantiate(config.data.datasets, transform=transform)
+    datasets = hydra.utils.instantiate(config.data.datasets)
 
 
     # Create Dataloaders
@@ -55,11 +47,6 @@ def train(local_rank, config: DictConfig):
     # Create Engine
     engine = hydra.utils.instantiate(config.engine, model, config)
 
-
-    # TODO: add ignite handlers
-
-    # TODO: add loggers
-
     # Create Evaluator
     evaluator = create_supervised_evaluator(
         model,
@@ -67,11 +54,13 @@ def train(local_rank, config: DictConfig):
         device=idist.device(),
     )
 
+    # TODO: add ignite callbacks for loggers, schedulers etc
+
     @engine.on(Events.EPOCH_COMPLETED(every=3))
     def evaluate_model():
         state = evaluator.run(dataloaders.val)
         if idist.get_rank() == 0:
-            print(state.metrics)
+            log.info(state.metrics)
 
     # Run Trainer
     engine.run(dataloaders.train, max_epochs=config.params.epochs)
