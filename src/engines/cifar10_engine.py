@@ -1,10 +1,11 @@
-import ignite.distributed as idist
-from ignite.engine import Engine, Events
-from ignite.contrib.handlers import ProgressBar
-import torch.nn as nn
-from src.components import Dataloaders
-from omegaconf import DictConfig
 import hydra
+from omegaconf import DictConfig
+
+import torch.nn as nn
+
+import ignite.distributed as idist
+from ignite.engine import Engine
+from ignite.contrib.handlers import ProgressBar
 
 def create_engine(model: nn.Module, config: DictConfig):
     """Combines the model and config into an engine"""

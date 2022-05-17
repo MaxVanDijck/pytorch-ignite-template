@@ -1,5 +1,6 @@
-import torchvision
 from src.components import Datasets
+
+import torchvision
 from torchvision.transforms import Compose, Normalize, ToTensor
 
 class CIFAR10TrainDataset(torchvision.datasets.CIFAR10):

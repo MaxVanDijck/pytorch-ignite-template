@@ -1,13 +1,13 @@
 import os
 import logging
-import ignite
-import torch
+from src.components import Dataloaders
+
 import hydra
 from omegaconf import DictConfig
-from ignite.utils import manual_seed
+import ignite
 import ignite.distributed as idist
+from ignite.utils import manual_seed
 from ignite.engine import create_supervised_evaluator, Events
-from src.components import Dataloaders
 
 log = logging.getLogger(__name__)
 

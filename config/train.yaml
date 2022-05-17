@@ -17,10 +17,12 @@ criterion:
 engine:
   _target_: src.engines.cifar10_engine.create_engine
 
+# Commonly changed hyperparameters
 params:
-  batch_size: 32
+  batch_size: 128
   epochs: 20
 
+# Hardware specific parameters
 compute:
-  backend:
-  nproc_per_node:
+  backend: # Can be either nccl, gloo, xla-tpu or left empty for None
+  nproc_per_node: # Integer, left empty for None
