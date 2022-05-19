@@ -1,4 +1,4 @@
-# NN-Template
+# PyTorch-Ignite-Template
 ### An extensible deep learning template for research and production
 
 ## Introduction
