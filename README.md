@@ -1,4 +1,4 @@
-# NN-Ignite-Template
+# NN-Template
 ### An extensible deep learning template for research and production
 
 ## Introduction
