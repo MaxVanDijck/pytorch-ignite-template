@@ -2,17 +2,26 @@ import hydra
 from omegaconf import DictConfig
 
 import torch.nn as nn
+import torch
 
 import ignite.distributed as idist
-from ignite.engine import Engine
+from ignite.engine import Engine, Events
 from ignite.contrib.handlers import ProgressBar
 
-def create_engine(model: nn.Module, config: DictConfig):
-    """Combines the model and config into an engine"""
-    
-    optimizer = idist.auto_optim(hydra.utils.instantiate(config.optimizer, params=model.parameters()))
-    criterion = hydra.utils.instantiate(config.criterion).to(idist.device())
+def create_engine(model: nn.Module, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module, config: DictConfig):
+    """
+    Combines the model and config into an engine
 
+    Any extra objects should be passed to this function such as:
+    - Optimizers
+    - Loss functions
+    This is to ensure we can access these objects 
+    through callbacks in train_pipeline.py
+
+    WARNING: If we initilize anything other than the engine here, 
+    we will not be able to access it through callbacks
+    """
+    
     # Define any training logic for iteration update
     def train_step(engine, batch):
         model.train()

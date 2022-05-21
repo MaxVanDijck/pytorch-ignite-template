@@ -1,5 +1,6 @@
 import os
 import logging
+from dataclasses import dataclass
 from src.components import Dataloaders
 
 import hydra
@@ -43,9 +44,12 @@ def train(local_rank, config: DictConfig):
         test = idist.auto_dataloader(datasets.test, batch_size = config.params.batch_size) if datasets.test else None,
     )
 
+    # Create Optimizer and Loss Function
+    optimizer = idist.auto_optim(hydra.utils.instantiate(config.optimizer, params=model.parameters()))
+    criterion = hydra.utils.instantiate(config.criterion).to(idist.device())
 
     # Create Engine
-    engine = hydra.utils.instantiate(config.engine, model, config)
+    engine = hydra.utils.instantiate(config.engine, model, optimizer, criterion, config)
 
     # Create Evaluator
     evaluator = create_supervised_evaluator(
@@ -54,13 +58,16 @@ def train(local_rank, config: DictConfig):
         device=idist.device(),
     )
 
-    # TODO: add ignite callbacks for loggers, schedulers etc
+    # add anything we may want to access in callbacks to engine state
+    engine.state.criterion = criterion
+    engine.state.optimizer = optimizer
+    engine.state.evaluator = evaluator
+    engine.state.dataloaders = dataloaders
 
-    @engine.on(Events.EPOCH_COMPLETED(every=3))
-    def evaluate_model():
-        state = evaluator.run(dataloaders.val)
-        if idist.get_rank() == 0:
-            log.info(state.metrics)
+    # Add callbacks to engine
+    for callback in config.callbacks.values():
+        log.info(f"Initializing Callback: {callback}")
+        hydra.utils.instantiate(callback, engine)
 
     # Run Trainer
     engine.run(dataloaders.train, max_epochs=config.params.epochs)
