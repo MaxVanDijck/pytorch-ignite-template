@@ -1,0 +1,11 @@
+# configuration
+hydra-core
+
+# pytorch
+pytorch-ignite
+torch
+torchvision
+torchaudio
+
+# misc
+tqdm

@@ -4,6 +4,20 @@
 ## Introduction
 Without a good starting point, research code often becomes unorganized and difficult to reproduce. This template provides a foundation for code that is configurable, understandable and most importantly, reduces long term [suffering](http://karpathy.github.io/2019/04/25/recipe/).
 
+## Getting Started
+```bash
+# Create a Conda environment
+# (You can use other Virtual Environments of your choosing)
+conda create --name my-awesome-project python=3.10
+conda activate my-awesome-project
+
+# install requirements
+pip install -r requirements.txt
+
+# test by running the CIFAR-10 example
+python train.py
+```
+
 ## Citing this Template
 If you use this template in your research please use the following BibTeX entries to recognise not only us, but the brilliant minds at Hydra, PyTorch & Ignite
 
