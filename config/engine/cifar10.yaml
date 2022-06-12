@@ -1,0 +1,8 @@
+engine:
+  _target_: src.engines.cifar10_engine.create_engine
+
+optimizer:
+  _target_: torch.optim.Adam
+
+criterion:
+  _target_: torch.nn.CrossEntropyLoss

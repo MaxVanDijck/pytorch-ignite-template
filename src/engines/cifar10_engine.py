@@ -2,13 +2,12 @@ import hydra
 from omegaconf import DictConfig
 
 import torch.nn as nn
-import torch
 
 import ignite.distributed as idist
 from ignite.engine import Engine, Events
 from ignite.contrib.handlers import ProgressBar
 
-def create_engine(model: nn.Module, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module, config: DictConfig):
+def create_engine(model: nn.Module, config: DictConfig):
     """
     Combines the model and config into an engine
 
@@ -21,6 +20,9 @@ def create_engine(model: nn.Module, optimizer: torch.optim.Optimizer, criterion:
     WARNING: If we initilize anything other than the engine here, 
     we will not be able to access it through callbacks
     """
+
+    optimizer = idist.auto_optim(hydra.utils.instantiate(config.engine.optimizer, params=model.parameters()))
+    criterion = hydra.utils.instantiate(config.engine.criterion).to(idist.device())
     
     # Define any training logic for iteration update
     def train_step(engine, batch):
@@ -39,6 +41,11 @@ def create_engine(model: nn.Module, optimizer: torch.optim.Optimizer, criterion:
 
     # Define trainer engine
     engine = Engine(train_step)
+
+    # add anything we may want to access in callbacks to engine state
+    engine.state.criterion = criterion
+    engine.state.optimizer = optimizer
+
 
     if idist.get_rank() == 0:
         # Add progress bar showing batch loss value

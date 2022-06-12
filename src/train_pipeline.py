@@ -1,14 +1,11 @@
 import os
 import logging
-from dataclasses import dataclass
 from src.components import Dataloaders
 
 import hydra
 from omegaconf import DictConfig
-import ignite
 import ignite.distributed as idist
 from ignite.utils import manual_seed
-from ignite.engine import create_supervised_evaluator, Events
 
 log = logging.getLogger(__name__)
 
@@ -44,25 +41,13 @@ def train(local_rank, config: DictConfig):
         test = idist.auto_dataloader(datasets.test, batch_size = config.params.batch_size) if datasets.test else None,
     )
 
-    # Create Optimizer and Loss Function
-    optimizer = idist.auto_optim(hydra.utils.instantiate(config.optimizer, params=model.parameters()))
-    criterion = hydra.utils.instantiate(config.criterion).to(idist.device())
 
     # Create Engine
-    engine = hydra.utils.instantiate(config.engine, model, optimizer, criterion, config)
-
-    # Create Evaluator
-    evaluator = create_supervised_evaluator(
-        model,
-        metrics={"accuracy": ignite.metrics.Accuracy(), "loss": ignite.metrics.Loss(hydra.utils.instantiate(config.criterion))},
-        device=idist.device(),
-    )
+    engine = hydra.utils.instantiate(config.engine.engine, model, config)
 
     # add anything we may want to access in callbacks to engine state
-    engine.state.criterion = criterion
-    engine.state.optimizer = optimizer
-    engine.state.evaluator = evaluator
     engine.state.dataloaders = dataloaders
+    engine.state.model = model
 
     # Add callbacks to engine
     for callback in config.callbacks.values():
