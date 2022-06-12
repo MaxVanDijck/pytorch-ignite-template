@@ -19,15 +19,6 @@ defaults:
   - model: cifar10.yaml # architecture configuration
   - engine: cifar10.yaml # engine configuration
 
-optimizer:
-  _target_: torch.optim.Adam
-
-criterion:
-  _target_: torch.nn.CrossEntropyLoss
-
-engine:
-  _target_: src.engines.cifar10_engine.create_engine
-
 callbacks:
   add_lr_scheduler:
     _target_: src.callbacks.started.add_lr_scheduler
