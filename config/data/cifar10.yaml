@@ -1,3 +1,0 @@
-datasets:
-  _target_: src.data.cifar10.get_datasets
-  root: data
