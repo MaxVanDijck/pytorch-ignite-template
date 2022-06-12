@@ -3,6 +3,7 @@ import logging
 from src.components import Dataloaders
 
 import hydra
+import torch
 from omegaconf import DictConfig
 import ignite.distributed as idist
 from ignite.utils import manual_seed
@@ -22,9 +23,12 @@ def train(local_rank, config: DictConfig):
         )
         log.info(f"Checkpoint set to {config.checkpoint}")
 
-    # Create Model
+    # Create Model and Load model if applicable
     model = idist.auto_model(hydra.utils.instantiate(config.model))
     log.info(f"Model: {model}")
+
+    if config.checkpoint:
+        model.load_state_dict(torch.load(config.checkpoint), strict=False)
 
 
     # Create Datasets
@@ -40,7 +44,6 @@ def train(local_rank, config: DictConfig):
         val = idist.auto_dataloader(datasets.val, batch_size = config.params.batch_size) if datasets.val else None,
         test = idist.auto_dataloader(datasets.test, batch_size = config.params.batch_size) if datasets.test else None,
     )
-
 
     # Create Engine
     engine = hydra.utils.instantiate(config.engine.engine, model, config)

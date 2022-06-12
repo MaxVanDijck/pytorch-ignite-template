@@ -1,6 +1,5 @@
-# Reproducibility
 seed: 42 # rng seed for torch, random and numpy
-checkpoint: False # TODO: implement checkpoint resumation
+checkpoint: False # Checkpoint to resume from, False otherwise
 
 # Hardware specific parameters
 compute:
