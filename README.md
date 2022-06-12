@@ -18,6 +18,8 @@ pip install -r requirements.txt
 python train.py
 ```
 
+![](https://github.com/Lune-AI/pytorch-ignite-template/blob/resources/ignite-diagram.svg)
+
 ## Citing this Template
 If you use this template in your research please use the following BibTeX entries to recognise not only us, but the brilliant minds at Hydra, PyTorch & Ignite
 
