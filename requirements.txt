@@ -7,5 +7,6 @@ torch
 torchvision
 torchaudio
 
-# misc
+# experiment tracking
 tqdm
+wandb
