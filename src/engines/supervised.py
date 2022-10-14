@@ -2,10 +2,12 @@ import hydra
 from omegaconf import DictConfig
 
 import torch.nn as nn
+from torch.cuda.amp import autocast
 
 import ignite.distributed as idist
 from ignite.engine import Engine, Events
 from ignite.contrib.handlers import ProgressBar
+
 
 def create_engine(model: nn.Module, config: DictConfig):
     """
@@ -30,8 +32,13 @@ def create_engine(model: nn.Module, config: DictConfig):
 
         x, y = batch[0].to(idist.device()), batch[1].to(idist.device())
 
-        y_pred = model(x)
-        loss = criterion(y_pred, y)
+        if config.engine.mixed_precision:
+            with autocast():
+                y_pred = model(x)
+                loss = criterion(y_pred, y)
+        else:
+            y_pred = model(x)
+            loss = criterion(y_pred, y)
 
         optimizer.zero_grad()
         loss.backward()

@@ -1,0 +1,10 @@
+engine:
+  _target_: src.engines.supervised.create_engine
+
+optimizer:
+  _target_: torch.optim.Adam
+
+criterion:
+  _target_: torch.nn.CrossEntropyLoss
+
+mixed_precision: True # bool: train with torch.cuda.amp.autocast
