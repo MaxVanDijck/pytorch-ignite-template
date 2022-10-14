@@ -16,7 +16,7 @@ defaults:
   - _self_
   - data: cifar10.yaml # dataset configuration
   - model: cifar10.yaml # architecture configuration
-  - engine: cifar10.yaml # engine configuration
+  - engine: supervised.yaml # engine configuration
 
 callbacks:
   add_lr_scheduler:
