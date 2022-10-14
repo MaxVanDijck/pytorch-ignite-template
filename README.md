@@ -8,7 +8,7 @@ Without a good starting point, research code often becomes unorganized and diffi
 ```bash
 # Create a Conda environment
 # (You can use other Virtual Environments of your choosing)
-conda create --name my-awesome-project python=3.10
+conda create --name my-awesome-project python=3.10 -y
 conda activate my-awesome-project
 
 # install requirements
