@@ -53,9 +53,10 @@ def train(local_rank, config: DictConfig):
     engine.state.model = model
 
     # Add callbacks to engine
-    for callback in config.callbacks.values():
-        log.info(f"Initializing Callback: {callback}")
-        hydra.utils.instantiate(callback, engine)
+    if isinstance(config.callbacks, dict):
+        for callback in config.callbacks.values():
+            log.info(f"Initializing Callback: {callback}")
+            hydra.utils.instantiate(callback, engine)
 
     # Run Trainer
     engine.run(dataloaders.train, max_epochs=config.params.epochs)
