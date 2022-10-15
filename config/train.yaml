@@ -15,7 +15,7 @@ params:
 defaults:
   - _self_
   - data: cifar10.yaml # dataset configuration
-  - model: cifar10.yaml # architecture configuration
+  - model: cnn.yaml # architecture configuration
   - engine: supervised.yaml # engine configuration
 
 callbacks:

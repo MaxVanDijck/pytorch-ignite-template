@@ -7,4 +7,4 @@ optimizer:
 criterion:
   _target_: torch.nn.CrossEntropyLoss
 
-mixed_precision: True # bool: train with torch.cuda.amp.autocast
+mixed_precision: False # bool: train with torch.cuda.amp.autocast
