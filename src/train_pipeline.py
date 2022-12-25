@@ -4,6 +4,7 @@ import os
 import hydra
 import ignite.distributed as idist
 import torch
+from ignite.handlers import Checkpoint
 from ignite.utils import manual_seed
 from omegaconf import DictConfig
 
@@ -18,18 +19,23 @@ def train(local_rank, config: DictConfig):
         log.info(f"Random Seed set to {config.seed}")
 
     # Convert checkpoint to absolute path if necessary
-    if config.checkpoint and not os.path.isabs(config.checkpoint):
-        config.checkpoint = os.path.join(
-            hydra.utils.get_original_cwd(), config.checkpoint
+    if config.model_checkpoint and not os.path.isabs(config.model_checkpoint):
+        config.model_checkpoint = os.path.join(
+            hydra.utils.get_original_cwd(), config.model_checkpoint
         )
-        log.info(f"Checkpoint set to {config.checkpoint}")
+        log.info(f"Checkpoint set to {config.model_checkpoint}")
+
+    if config.resume_from and not os.path.isabs(config.resume_from):
+        config.resume_from = os.path.join(
+            hydra.utils.get_original_cwd(), config.resume_from
+        )
 
     # Create Model and Load model if applicable
     model = idist.auto_model(hydra.utils.instantiate(config.model))
     log.info(f"Model: {model}")
 
-    if config.checkpoint:
-        model.load_state_dict(torch.load(config.checkpoint), strict=False)
+    if config.model_checkpoint:
+        model.load_state_dict(torch.load(config.model_checkpoint), strict=False)
 
 
     # Create Datasets
@@ -58,6 +64,11 @@ def train(local_rank, config: DictConfig):
         for callback in config.callbacks.values():
             log.info(f"Initializing Callback: {callback}")
             hydra.utils.instantiate(callback, engine)
+    
+    # restore engine state if applicable
+    if config.resume_from:
+        to_save = {'model': engine.state.model, 'engine': engine}
+        Checkpoint.load_objects(to_load=to_save, checkpoint=config.resume_from) 
 
     # Run Trainer
     engine.run(dataloaders.train, max_epochs=config.params.epochs)

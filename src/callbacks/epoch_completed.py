@@ -35,7 +35,8 @@ def evaluate_model(engine, log_to_wandb):
 
     # save best 3 models based upon evaluation
     to_save = {
-        'model': engine.state.model
+        'model': engine.state.model,
+        'engine': engine
     }
     handler = ignite.handlers.checkpoint.Checkpoint(
         to_save, 
