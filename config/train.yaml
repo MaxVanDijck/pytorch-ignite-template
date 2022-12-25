@@ -1,6 +1,6 @@
 seed: 42 # rng seed for torch, random and numpy
-checkpoint: False # Checkpoint to resume from, False otherwise
-
+model_checkpoint: False # Checkpoint to resume from, False otherwise
+resume_from: False # Model and Enginer state to resume from, False otherwise
 # Hardware specific parameters
 compute:
   backend: # Can be either nccl, gloo, xla-tpu or left empty for None
