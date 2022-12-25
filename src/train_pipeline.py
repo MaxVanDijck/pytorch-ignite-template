@@ -1,12 +1,13 @@
-import os
 import logging
-from src.components import Dataloaders
+import os
 
 import hydra
-import torch
-from omegaconf import DictConfig
 import ignite.distributed as idist
+import torch
 from ignite.utils import manual_seed
+from omegaconf import DictConfig
+
+from src.components import Dataloaders
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ def train(local_rank, config: DictConfig):
     engine.state.model = model
 
     # Add callbacks to engine
-    if isinstance(config.callbacks, dict):
+    if isinstance(config.callbacks, DictConfig):
         for callback in config.callbacks.values():
             log.info(f"Initializing Callback: {callback}")
             hydra.utils.instantiate(callback, engine)
