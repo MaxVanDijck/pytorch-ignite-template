@@ -8,3 +8,4 @@ criterion:
   _target_: torch.nn.CrossEntropyLoss
 
 mixed_precision: False # bool: train with torch.cuda.amp.autocast
+log_to_wandb: True

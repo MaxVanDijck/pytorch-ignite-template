@@ -61,9 +61,10 @@ def train(local_rank, config: DictConfig):
 
     # Add callbacks to engine
     if isinstance(config.callbacks, DictConfig):
-        for callback in config.callbacks.values():
-            log.info(f"Initializing Callback: {callback}")
-            hydra.utils.instantiate(callback, engine)
+        for event, callbacks in config.callbacks.items():
+            for callback in callbacks.values():
+                engine.add_event_handler(event, hydra.utils.get_method(callback))
+                log.info(f"Initializing Callback: {callback}")
     
     # restore engine state if applicable
     if config.resume_from:
