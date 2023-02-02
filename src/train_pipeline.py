@@ -35,6 +35,7 @@ def train(local_rank, config: DictConfig):
     log.info(f"Model: {model}")
 
     if config.model_checkpoint:
+        log.info(f"Loading model checkpoint from: {config.model_checkpoint}")
         model.load_state_dict(torch.load(config.model_checkpoint), strict=False)
 
 
@@ -58,6 +59,7 @@ def train(local_rank, config: DictConfig):
     # add anything we may want to access in callbacks to engine state
     engine.state.dataloaders = dataloaders
     engine.state.model = model
+    engine.state.config = config
 
     # Add callbacks to engine
     if isinstance(config.callbacks, DictConfig):
@@ -69,6 +71,7 @@ def train(local_rank, config: DictConfig):
     # restore engine state if applicable
     if config.resume_from:
         to_save = {'model': engine.state.model, 'engine': engine}
+        log.info(f"Resuming training from: {config.resume_from}")
         Checkpoint.load_objects(to_load=to_save, checkpoint=config.resume_from) 
 
     # Run Trainer

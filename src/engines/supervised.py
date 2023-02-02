@@ -4,10 +4,12 @@ import os
 import hydra
 import ignite
 import ignite.distributed as idist
+import torch
 import torch.nn as nn
 import wandb
 from ignite.contrib.handlers import ProgressBar
 from ignite.engine import Engine, Events, create_supervised_evaluator
+from ignite.metrics import Accuracy, Loss
 from omegaconf import DictConfig
 from torch.cuda.amp import autocast
 
@@ -47,34 +49,50 @@ def create_engine(model: nn.Module, config: DictConfig):
 
         return loss.item()
 
-    # Define trainer engine
+    # define trainer engine
     engine = Engine(train_step)
 
-    # add anything we may want to access in callbacks to engine state
-    engine.state.criterion = criterion
-    engine.state.optimizer = optimizer
-
-    if idist.get_rank() == 0:
-        # Add progress bar showing batch loss value
-        ProgressBar().attach(engine, output_transform=lambda x: {"batch loss": x})
-
     # VALIDATION
-    evaluator = create_supervised_evaluator(
-        model,
-        metrics={"accuracy": ignite.metrics.Accuracy(), "loss": ignite.metrics.Loss(engine.state.criterion)},
-        device=idist.device(),
-    )
+    def validation_step(engine, batch):
+        model.eval()
+        with torch.no_grad():
+            x, y = batch[0].to(idist.device()), batch[1].to(idist.device())
+            y_pred = model(x)
+            return y_pred, y
+
+    # define evaluation engine
+    evaluator = Engine(validation_step)
+
+    val_metrics = {
+        "accuracy": Accuracy(),
+        "loss": Loss(criterion)
+    }
+    for name, metric in val_metrics.items():
+        metric.attach(evaluator, name)
+
+    # progress bar
+    if idist.get_rank() == 0:
+        pbar = ProgressBar()
+        pbar.attach(engine, output_transform=lambda x: {"batch loss": x})
+        pbar.attach(evaluator, metric_names="all")
+
+    # add anything we may want to access in callbacks to engine state
+    engine.state.optimizer = optimizer
+    engine.state.criterion = criterion
     engine.state.evaluator = evaluator
-    def function(engine, log_to_wandb=config.engine.log_to_wandb):
+
+    # run evaluation on epoch completed
+    def run_evaluation(engine, log_to_wandb=config.engine.log_to_wandb):
         state = engine.state.evaluator.run(engine.state.dataloaders.val)
+        # TODO: refactor the logging with ignite inbuilt handlers
         if idist.get_rank() == 0:
             log.info(state.metrics)
             if log_to_wandb:
                 wandb.log(state.metrics)
                 log.info("Logged to Wandb")
-    engine.add_event_handler(Events.EPOCH_COMPLETED, function)
+    engine.add_event_handler(Events.EPOCH_COMPLETED, run_evaluation)
 
-    # save best 3 models based upon evaluation
+    # model checkpointing
     to_save = {
         'model': model,
         'engine': engine
@@ -84,10 +102,11 @@ def create_engine(model: nn.Module, config: DictConfig):
         os.getcwd(),
         n_saved=3,
         filename_prefix='best',
+        score_function=lambda engine: engine.state.metrics["accuracy"],
         score_name="accuracy",
     )
-    log.info(f"Saving best models to: {os.getcwd()}")
     engine.state.evaluator.add_event_handler(Events.COMPLETED, handler)
+    log.info(f"Saving best models to: {os.getcwd()}")
 
     return engine
 

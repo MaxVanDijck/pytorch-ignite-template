@@ -1,7 +1,8 @@
+import torch.nn as nn
 import wandb
 from ignite.engine import Events
 from ignite.handlers import LRScheduler
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import LambdaLR, StepLR
 
 
 def add_lr_scheduler(engine):
