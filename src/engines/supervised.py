@@ -6,9 +6,9 @@ import ignite
 import ignite.distributed as idist
 import torch
 import torch.nn as nn
-import wandb
 from ignite.contrib.handlers import ProgressBar
-from ignite.engine import Engine, Events, create_supervised_evaluator
+from ignite.contrib.handlers.wandb_logger import WandBLogger
+from ignite.engine import Engine, Events
 from ignite.metrics import Accuracy, Loss
 from omegaconf import DictConfig
 from torch.cuda.amp import autocast
@@ -75,6 +75,23 @@ def create_engine(model: nn.Module, config: DictConfig):
         pbar = ProgressBar()
         pbar.attach(engine, output_transform=lambda x: {"batch loss": x})
         pbar.attach(evaluator, metric_names="all")
+        if config.engine.log_to_wandb:
+            wandb_logger = WandBLogger()
+            wandb_logger.attach_output_handler(
+                engine, 
+                event_name=Events.ITERATION_COMPLETED, 
+                tag="train", 
+                output_transform=lambda x: {"batch loss": x}, 
+                global_step_transform=lambda *_: engine.state.iteration
+            )
+            wandb_logger.attach_output_handler(
+                evaluator, 
+                event_name=Events.EPOCH_COMPLETED, 
+                tag="validation", 
+                metric_names="all", 
+                global_step_transform=lambda *_: engine.state.iteration
+            )
+
 
     # add anything we may want to access in callbacks to engine state
     engine.state.optimizer = optimizer
@@ -82,14 +99,9 @@ def create_engine(model: nn.Module, config: DictConfig):
     engine.state.evaluator = evaluator
 
     # run evaluation on epoch completed
-    def run_evaluation(engine, log_to_wandb=config.engine.log_to_wandb):
-        state = engine.state.evaluator.run(engine.state.dataloaders.val)
-        # TODO: refactor the logging with ignite inbuilt handlers
-        if idist.get_rank() == 0:
-            log.info(state.metrics)
-            if log_to_wandb:
-                wandb.log(state.metrics)
-                log.info("Logged to Wandb")
+    def run_evaluation(engine):
+        engine.state.evaluator.run(engine.state.dataloaders.val)
+
     engine.add_event_handler(Events.EPOCH_COMPLETED, run_evaluation)
 
     # model checkpointing

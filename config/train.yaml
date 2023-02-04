@@ -23,7 +23,6 @@ callbacks:
   # see https://pytorch.org/ignite/generated/ignite.engine.events.Events.html#ignite.engine.events.Events
   STARTED:
     add_lr_scheduler: src.callbacks.started.add_lr_scheduler
-    init_wandb: src.callbacks.started.init_wandb
 
   EPOCH_COMPLETED:
     log_lr: src.callbacks.epoch_completed.log_lr
