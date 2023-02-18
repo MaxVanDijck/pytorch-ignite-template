@@ -48,7 +48,7 @@ def train(local_rank, config: DictConfig):
 
     # Create Dataloaders
     dataloaders = Dataloaders(
-        train = idist.auto_dataloader(datasets.train, batch_size = config.params.batch_size) if datasets.train else None,
+        train = idist.auto_dataloader(datasets.train, batch_size = config.params.batch_size, shuffle=True) if datasets.train else None,
         val = idist.auto_dataloader(datasets.val, batch_size = config.params.batch_size) if datasets.val else None,
         test = idist.auto_dataloader(datasets.test, batch_size = config.params.batch_size) if datasets.test else None,
     )
