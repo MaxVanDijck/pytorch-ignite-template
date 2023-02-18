@@ -1,11 +1,12 @@
-from omegaconf import DictConfig
-import hydra
 import logging
+
+import hydra
 import ignite.distributed as idist
+from omegaconf import DictConfig
 
 log = logging.getLogger(__name__)
 
-@hydra.main(config_path="config", config_name="train")
+@hydra.main(config_path="config", config_name="train", version_base="1.3")
 def main(config: DictConfig):
     from src.train_pipeline import train
 

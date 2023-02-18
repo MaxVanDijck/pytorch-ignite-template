@@ -32,7 +32,7 @@ def train(local_rank, config: DictConfig):
 
     # Create Model and Load model if applicable
     model = idist.auto_model(hydra.utils.instantiate(config.model))
-    log.info(f"Model: {model}")
+    log.info(f"Model: {model.__class__.__name__}")
 
     if config.model_checkpoint:
         log.info(f"Loading model checkpoint from: {config.model_checkpoint}")

@@ -6,6 +6,7 @@ import ignite
 import ignite.distributed as idist
 import torch
 import torch.nn as nn
+import wandb
 from ignite.contrib.handlers import ProgressBar
 from ignite.contrib.handlers.wandb_logger import WandBLogger
 from ignite.engine import Engine, Events
@@ -26,7 +27,7 @@ def create_engine(model: nn.Module, config: DictConfig):
     through callbacks in train_pipeline.py
     """
     # TRAIN
-    optimizer = idist.auto_optim(hydra.utils.instantiate(config.engine.optimizer, params=model.parameters()))
+    optimizer = idist.auto_optim(hydra.utils.instantiate(config.engine.optimizer, params=model.parameters(), lr=config.params.learning_rate))
     criterion = hydra.utils.instantiate(config.engine.criterion).to(idist.device())
     
     # Define any training logic for iteration update
@@ -91,6 +92,7 @@ def create_engine(model: nn.Module, config: DictConfig):
                 metric_names="all", 
                 global_step_transform=lambda *_: engine.state.iteration
             )
+            engine.add_event_handler(Events.COMPLETED, wandb.finish)
 
 
     # add anything we may want to access in callbacks to engine state

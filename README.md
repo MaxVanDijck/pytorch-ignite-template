@@ -2,7 +2,8 @@
 ### An extensible deep learning template for research and production
 
 ## Introduction
-Without a good starting point, research code often becomes unorganized and difficult to reproduce. This template provides a foundation for code that is configurable, understandable and most importantly, reduces long term [suffering](http://karpathy.github.io/2019/04/25/recipe/).
+Without a good starting point, research code often becomes unorganized and difficult to reproduce. This template provides a foundation for code that is configurable and understandable.
+This template uses Pytorch Ignite to easily switch between CPU, GPU and Multi-GPU training configurations and Hydra to ensure that experiment configuration and resulting output is kept clean and reproducible.
 
 ## Getting Started
 ```bash
@@ -20,12 +21,13 @@ python train.py
 
 ![](https://github.com/Lune-AI/pytorch-ignite-template/blob/resources/ignite-diagram.svg)
 
-## Citing this Template
+<details>
+<summary>Citing this Template</summary>
 If you use this template in your research please use the following BibTeX entries to recognise not only us, but the brilliant minds at Hydra, PyTorch & Ignite
 
 ##### NN Template
 ```
-@Misc{nn-template
+@Misc{pytorch-ignite-template
   author =       {M. van Dijck},
   title =        {NN Template: An extensible deep learning template for research and production},
   year =         {2022},
@@ -68,3 +70,4 @@ url =       {http://papers.neurips.cc/paper/9015-pytorch-an-imperative-style-hig
   howpublished = {\url{https://github.com/pytorch/ignite}},
 }
 ```
+</details>

@@ -9,7 +9,8 @@ compute:
 # Commonly changed hyperparameters
 params:
   batch_size: 128
-  epochs: 20
+  epochs: 5
+  learning_rate: 0.001
 
 # specify the default training parameters
 defaults:
@@ -26,3 +27,8 @@ callbacks:
 
   EPOCH_COMPLETED:
     log_lr: src.callbacks.epoch_completed.log_lr
+
+# Hydra specific settings
+hydra:
+  job:
+    chdir: True
