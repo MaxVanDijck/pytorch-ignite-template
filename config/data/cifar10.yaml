@@ -1,3 +1,3 @@
 datasets:
-  _target_: src.data.cifar10.get_datasets
+  _target_: src.data.cifar10.get_datasets_mixup
   root: data
